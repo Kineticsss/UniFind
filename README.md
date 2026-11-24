@@ -1,6 +1,6 @@
 # UniFind
 
-UniFind is a lost and found website for one university campus. It is our CS 413 final project. Students, faculty and staff post what they lost or found, search the open reports, and get a push alert when someone posts a report that looks like theirs.
+UniFind is a lost and found website for one university campus. It is a CS 413 final project. Students, faculty and staff post what they lost or found, search the open reports, and get a push alert when someone posts a report that looks like theirs.
 
 The main feature is F-01. A signed-in user reports a lost or found item with a category, a description and an optional photo. UniFind saves the report, compares it with open reports of the opposite type, and alerts the people who posted likely matches. The reporter sees the report ID and how many matches were found.
 
@@ -33,7 +33,7 @@ firebase/                Firestore rules (browsers get no direct access) and ind
 | I-4 `sendMatchAlert(ownerUid, message, itemId)` | `notificationAdapter.js` | Sends to the OneSignal external ID with a 5 second timeout. Returns `sent` or `failed` and never throws |
 | I-5 browser to Cloudinary | `frontend/js/services.js` | Uploads through an unsigned preset (JPG, PNG or WebP, 5 MB max). If the upload fails, the user can still post |
 
-Matching works on the words in the title and description. We lowercase them and drop common words and generic ones like "bag", "lost" and "item". Plurals become singular, and each category has a short synonym list, so "phone" and "cellphone" count as the same word. Every shared word adds 1 to the score and a shared color adds 0.5. A report needs a score of 1.5 to count as a match, or 2.5 in "Others". You can change these numbers in `shared/categories.json`.
+Matching works on the words in the title and description. The matcher lowercases them and drops common words and generic ones like "bag", "lost" and "item". Plurals become singular, and each category has a short synonym list, so "phone" and "cellphone" count as the same word. Every shared word adds 1 to the score and a shared color adds 0.5. A report needs a score of 1.5 to count as a match, or 2.5 in "Others". You can change these numbers in `shared/categories.json`.
 
 Alerts for all matches go out at the same time. If OneSignal is down, a post waits for one 5 second timeout instead of 5 seconds per match. When any alert fails, the report is still saved and its `notificationStatus` becomes `pending_retry`. Nothing retries those alerts yet.
 
@@ -68,7 +68,7 @@ Put these values in `backend/.env` when running locally, or in the Render dashbo
    - In Project settings under General, add a Web app. Its `apiKey`, `authDomain`, `projectId` and `appId` go into the frontend config (step 4).
    - Set `AUTH_MODE=firebase` and `STORAGE_MODE=firestore`.
 2. Cloudinary (C-05). In Settings, open Upload and add an unsigned upload preset. Allow only `jpg,png,webp` and set the maximum file size to 5 MB (5242880 bytes). The backend needs `CLOUDINARY_CLOUD_NAME`. The preset name goes in the frontend config.
-3. OneSignal (C-06). Create a Web app with your HTTPS site URL. The service worker it needs, `frontend/OneSignalSDKWorker.js`, is already at the site root. Set `ONESIGNAL_APP_ID`, `ONESIGNAL_REST_API_KEY` and `NOTIFY_MODE=onesignal`. Users turn alerts on from the My reports page.
+3. OneSignal (C-06). Create a Web app with your HTTPS site URL. The service worker it needs, `frontend/OneSignalSDKWorker.js`, is already at the site root. Set `ONESIGNAL_APP_ID`, `ONESIGNAL_REST_API_KEY` and `NOTIFY_MODE=onesignal`. Users turn alerts on from the Your reports page.
 4. Frontend config. `frontend/js/config.js` holds values the browser needs. None of them are secret. For a local run against the real services, edit the file: set `authMode: 'firebase'` and fill in the Firebase web config, the Cloudinary cloud name and preset, and the OneSignal app ID. On Render, `frontend/scripts/build-config.js` writes this file from environment variables.
 
 If you pick a real service but leave out one of its variables, the backend stops at startup and names the missing variable (C-02).

@@ -34,7 +34,7 @@ async function api(path, { method = 'GET', body } = {}) {
     toast('Your sign-in expired. Please sign in again.');
     await auth.signOut();
   }
-  throw Object.assign(new ApiError(data.error?.message || 'Something went wrong.'), { status: res.status, fields: data.error?.fields });
+  throw Object.assign(new ApiError(data.error?.message || `UniFind returned an error (${res.status}). Try again.`), { status: res.status, fields: data.error?.fields });
 }
 
 // ---------- UI helpers ----------
@@ -58,15 +58,15 @@ const yours = (item) => (item.isMine ? '<span class="yours">Yours</span>' : '');
 const where = (item) => (item.location ? `, ${esc(item.location)}` : '');
 
 function tagCard(item) {
-  const photo = item.imageUrl ? `<img class="card-photo" src="${esc(thumb(item.imageUrl, 'c_fill,w_480,h_360'))}" alt="" loading="lazy">` : '';
+  const photo = item.imageUrl ? `<img class="card-photo" src="${esc(thumb(item.imageUrl, 'c_fill,w_200,h_200'))}" alt="" loading="lazy">` : '';
   return `<a class="card-item ${item.type}" href="#/item/${encodeURIComponent(item.itemId)}">
-    ${photo}
     <div class="card-body">
       <span class="card-kind">${KIND[item.type]}${yours(item)}</span>
       <h2 class="card-title">${esc(item.title)}</h2>
       <p class="card-meta">${esc(catLabel(item.category))}</p>
       <p class="card-meta">${fmtDate(item.date)}${where(item)}</p>
     </div>
+    ${photo}
   </a>`;
 }
 
@@ -129,7 +129,7 @@ function mineRow(item) {
   return `<article class="report-row ${item.type}">
     <div class="d-flex flex-wrap gap-2 align-items-baseline">
       <h2 class="h-sub m-0"><a href="#/item/${encodeURIComponent(item.itemId)}" class="text-reset">${KIND[item.type]}: ${esc(item.title)}</a></h2>
-      <span class="small muted ms-auto">Report ${esc(item.itemId.slice(0, 8))}</span>
+      <span class="small muted">Report ${esc(item.itemId.slice(0, 8))}</span>
     </div>
     <p class="small muted mb-3">${esc(catLabel(item.category))}, ${fmtDate(item.date)}</p>
     <h3 class="h-small mb-2">Possible matches (${item.matches.length})</h3>
@@ -186,7 +186,7 @@ function resetPhoto() {
   $('#photoPreview').hidden = true;
   $('#photoClear').hidden = true;
   $('#photoLabel').textContent = 'Choose a photo';
-  setPhotoStatus(uploadsEnabled ? '' : 'Photo upload is off in demo mode (no Cloudinary account configured).');
+  setPhotoStatus(uploadsEnabled ? '' : 'You can\'t add photos in demo mode.');
   $('#photo').disabled = !uploadsEnabled;
 }
 
@@ -257,8 +257,8 @@ $('#reportForm').addEventListener('submit', async (e) => {
     $('#postedId').textContent = `Report ${result.itemId}`;
     $('#postedText').textContent = result.matchCount
       ? result.notificationStatus === 'sent'
-        ? 'The people who posted them got an alert. Compare the details in My reports.'
-        : 'Compare the details in My reports. The alert to the other people did not go through, so it is marked to send again.'
+        ? 'The people who posted them got an alert. Compare the details in Your reports.'
+        : 'Compare the details in Your reports. The alert to the other people didn\'t go through, so it is saved to send again.'
       : 'No open report looks like yours yet. You get an alert when one is posted.';
     show('posted');
   } catch (err) {
@@ -271,6 +271,7 @@ $('#reportForm').addEventListener('submit', async (e) => {
 });
 
 // ---------- Filters ----------
+$('#moreFilters').open = matchMedia('(min-width: 768px)').matches; // phones start with the extra filters folded away
 $('#filters').addEventListener('input', () => {
   clearTimeout(searchTimer);
   searchTimer = setTimeout(renderBrowse, 250);

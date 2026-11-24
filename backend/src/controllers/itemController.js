@@ -32,17 +32,17 @@ function validateReport(body, cloudName) {
 
   if (!TYPES.includes(report.type)) fields.type = 'Choose lost or found.';
   if (typeof report.title !== 'string' || report.title.length < 3 || report.title.length > 100)
-    fields.title = 'Title must be 3 to 100 characters.';
+    fields.title = 'Name the item in 3 to 100 characters.';
   if (!SLUGS.includes(report.category)) fields.category = 'Choose a category from the list.';
   if (typeof report.description !== 'string' || report.description.length > 500)
-    fields.description = 'Description must be at most 500 characters.';
+    fields.description = 'Shorten the description to 500 characters or fewer.';
   if (typeof report.location !== 'string' || report.location.length > 100)
-    fields.location = 'Location must be at most 100 characters.';
+    fields.location = 'Shorten the place to 100 characters or fewer.';
   if (!isDay(report.date))
     fields.date = 'Enter a valid date.';
-  else if (report.date > today()) fields.date = 'Date cannot be in the future.';
+  else if (report.date > today()) fields.date = 'Pick today or an earlier date.';
   if (report.imageUrl !== null && !isProjectImage(report.imageUrl, cloudName))
-    fields.imageUrl = "Photo must be uploaded through UniFind's image service.";
+    fields.imageUrl = 'Add the photo with the Choose a photo button on this form.';
 
   if (Object.keys(fields).length) throw ValidationError(fields);
   return report;

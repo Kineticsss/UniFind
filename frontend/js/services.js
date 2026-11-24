@@ -63,7 +63,7 @@ export function authMessage(err) {
     'auth/popup-closed-by-user': 'Google sign-in was closed before it finished.',
     'auth/network-request-failed': 'No connection. Check your internet and try again.',
   };
-  return map[err?.code] || 'Sign-in failed. Please try again.';
+  return map[err?.code] || 'Sign-in didn\'t go through. Try again.';
 }
 
 // ---------- Cloudinary (I-5) ----------
