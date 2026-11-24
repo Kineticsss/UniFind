@@ -95,23 +95,34 @@ export function initPush(uid) {
   if (!oneSignal) {
     oneSignal = new Promise((resolve) => {
       window.OneSignalDeferred = window.OneSignalDeferred || [];
+      // A failed init (wrong Site URL in OneSignal, blocked script) resolves to null instead of hanging.
       window.OneSignalDeferred.push(async (OneSignal) => {
-        await OneSignal.init({ appId: cfg.oneSignalAppId });
-        resolve(OneSignal);
+        try {
+          await OneSignal.init({ appId: cfg.oneSignalAppId });
+          resolve(OneSignal);
+        } catch (err) {
+          console.error('[onesignal] init failed:', err);
+          resolve(null);
+        }
       });
       const s = document.createElement('script');
       s.src = 'https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';
       s.defer = true;
+      s.onerror = () => {
+        console.error('[onesignal] SDK script could not load');
+        resolve(null);
+      };
       document.head.append(s);
     });
   }
   // External ID = Firebase UID, so the backend can target this user (LA3 C-06).
-  oneSignal.then((OneSignal) => (uid ? OneSignal.login(uid) : OneSignal.logout()));
+  oneSignal.then((OneSignal) => OneSignal && (uid ? OneSignal.login(uid) : OneSignal.logout()));
 }
 
 export async function requestPush() {
   const OneSignal = await oneSignal;
+  if (!OneSignal) throw new Error('Alerts could not start on this site. Try again later.');
   await OneSignal.Notifications.requestPermission();
   return OneSignal.Notifications.permission;
 }
-export const pushGranted = async () => (oneSignal ? (await oneSignal).Notifications.permission : false);
+export const pushGranted = async () => Boolean((await oneSignal)?.Notifications.permission);

@@ -301,9 +301,13 @@ $('#signinFake').addEventListener('submit', (e) => {
 });
 $('#signOut').addEventListener('click', () => auth.signOut());
 $('#pushBtn').addEventListener('click', async () => {
-  const granted = await requestPush().catch(() => false);
-  $('#pushBtn').hidden = granted;
-  toast(granted ? 'Match alerts are on for this browser.' : 'Alerts are blocked. Allow notifications for this site in your browser settings.');
+  try {
+    const granted = await requestPush();
+    $('#pushBtn').hidden = granted;
+    toast(granted ? 'Match alerts are on for this browser.' : 'Alerts are blocked. Allow notifications for this site in your browser settings.');
+  } catch (err) {
+    toast(err.message);
+  }
 });
 
 // ---------- Start ----------
