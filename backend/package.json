@@ -25,5 +25,8 @@
   },
   "devDependencies": {
     "supertest": "7.3.2"
+  },
+  "overrides": {
+    "jose": "4.15.9"
   }
 }
