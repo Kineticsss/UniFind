@@ -1,0 +1,8 @@
+{
+  "name": "unifind",
+  "private": true,
+  "description": "Root manifest for Vercel: picks the Node.js version. App code lives in backend/ and frontend/.",
+  "engines": {
+    "node": "24.x"
+  }
+}
