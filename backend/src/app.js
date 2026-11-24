@@ -17,7 +17,7 @@ function createApp({ config, verifyToken, repo, notifier }) {
   const items = createItemController({ itemService: createItemService({ repo, notifier }), cloudName: config.cloudinaryCloudName });
   const auth = requireAuth(verifyToken);
 
-  app.set('trust proxy', 1); // Render sits behind one proxy; needed for per-client rate limits.
+  app.set('trust proxy', 1); // Vercel sits behind one proxy; needed for per-client rate limits.
   app.use('/api', helmet(), cors({ origin: config.corsOrigins }), express.json({ limit: '20kb' }));
 
   app.get('/api/health', (req, res) => res.json({ ok: true }));
@@ -28,7 +28,7 @@ function createApp({ config, verifyToken, repo, notifier }) {
   app.get('/api/items/:id', auth, items.get);
   app.use('/api', (req, res) => res.status(404).json({ error: { code: 'NOT_FOUND', message: 'No such endpoint.' } }));
 
-  // Local single-process run only. On Render the frontend is its own static site.
+  // Local single-process run only. On Vercel the frontend is served as static files.
   if (config.serveFrontend) app.use(express.static(path.resolve(__dirname, '../../frontend')));
 
   app.use(errorHandler);

@@ -38,6 +38,9 @@ function createMemoryItemRepository() {
     async update(itemId, patch) {
       Object.assign(items.get(itemId), patch);
     },
+    async remove(itemId) {
+      items.delete(itemId);
+    },
   };
 }
 

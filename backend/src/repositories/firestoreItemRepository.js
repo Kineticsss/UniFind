@@ -58,6 +58,7 @@ function createFirestoreItemRepository(db) {
         await batch.commit();
       }),
     update: (itemId, patch) => run(() => col.doc(itemId).update(patch)),
+    remove: (itemId) => run(() => col.doc(itemId).delete()),
   };
 }
 
