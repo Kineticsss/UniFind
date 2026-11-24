@@ -1,0 +1,258 @@
+{
+  "categories": [
+    {
+      "slug": "ids_documents",
+      "label": "IDs and Documents",
+      "synonyms": [
+        [
+          "id",
+          "identification",
+          "idcard"
+        ],
+        [
+          "license",
+          "licence"
+        ],
+        [
+          "lanyard",
+          "strap"
+        ],
+        [
+          "certificate",
+          "cert"
+        ]
+      ]
+    },
+    {
+      "slug": "wallets",
+      "label": "Wallets and Purses",
+      "synonyms": [
+        [
+          "wallet",
+          "purse",
+          "billfold"
+        ],
+        [
+          "cardholder",
+          "cardcase"
+        ],
+        [
+          "coinpurse",
+          "coin"
+        ]
+      ]
+    },
+    {
+      "slug": "gadgets",
+      "label": "Gadgets and Electronics",
+      "synonyms": [
+        [
+          "phone",
+          "cellphone",
+          "smartphone",
+          "mobile",
+          "cp"
+        ],
+        [
+          "laptop",
+          "notebook"
+        ],
+        [
+          "tablet",
+          "ipad"
+        ],
+        [
+          "earphones",
+          "earbuds",
+          "headphones",
+          "headset",
+          "airpods"
+        ],
+        [
+          "charger",
+          "adapter"
+        ],
+        [
+          "powerbank",
+          "battery"
+        ],
+        [
+          "usb",
+          "flashdrive",
+          "thumbdrive"
+        ]
+      ]
+    },
+    {
+      "slug": "bags",
+      "label": "Bags",
+      "synonyms": [
+        [
+          "backpack",
+          "knapsack",
+          "bookbag"
+        ],
+        [
+          "tote",
+          "totebag"
+        ],
+        [
+          "pouch",
+          "kit"
+        ],
+        [
+          "sling",
+          "crossbody"
+        ]
+      ]
+    },
+    {
+      "slug": "keys",
+      "label": "Keys",
+      "synonyms": [
+        [
+          "key",
+          "keys"
+        ],
+        [
+          "keychain",
+          "keyring"
+        ],
+        [
+          "fob",
+          "remote"
+        ]
+      ]
+    },
+    {
+      "slug": "school_supplies",
+      "label": "Books and School Supplies",
+      "synonyms": [
+        [
+          "book",
+          "textbook"
+        ],
+        [
+          "notebook",
+          "journal"
+        ],
+        [
+          "pen",
+          "ballpen"
+        ],
+        [
+          "calculator",
+          "calc"
+        ],
+        [
+          "binder",
+          "folder"
+        ]
+      ]
+    },
+    {
+      "slug": "clothing_accessories",
+      "label": "Clothing and Accessories",
+      "synonyms": [
+        [
+          "jacket",
+          "hoodie",
+          "sweater",
+          "coat"
+        ],
+        [
+          "cap",
+          "hat"
+        ],
+        [
+          "glasses",
+          "eyeglasses",
+          "spectacles"
+        ],
+        [
+          "watch",
+          "smartwatch"
+        ],
+        [
+          "tumbler",
+          "bottle",
+          "flask"
+        ]
+      ]
+    },
+    {
+      "slug": "others",
+      "label": "Others",
+      "synonyms": []
+    }
+  ],
+  "matching": {
+    "minScore": 1.5,
+    "minScoreByCategory": {
+      "others": 2.5
+    },
+    "maxResults": 3,
+    "weights": {
+      "keyword": 1,
+      "color": 0.5
+    },
+    "colors": [
+      "black",
+      "white",
+      "gray",
+      "grey",
+      "silver",
+      "gold",
+      "red",
+      "blue",
+      "navy",
+      "green",
+      "yellow",
+      "orange",
+      "pink",
+      "purple",
+      "violet",
+      "brown",
+      "beige",
+      "maroon",
+      "clear",
+      "transparent",
+      "dark",
+      "light"
+    ],
+    "genericWords": [
+      "bag",
+      "item",
+      "thing",
+      "stuff",
+      "lost",
+      "found",
+      "missing",
+      "left",
+      "near",
+      "around",
+      "color",
+      "colored",
+      "small",
+      "big",
+      "large",
+      "medium",
+      "new",
+      "old",
+      "please",
+      "pls",
+      "contact",
+      "owner",
+      "someone",
+      "campus",
+      "room",
+      "building",
+      "floor",
+      "today",
+      "yesterday",
+      "morning",
+      "afternoon",
+      "evening"
+    ]
+  }
+}

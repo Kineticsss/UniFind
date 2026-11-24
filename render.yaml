@@ -1,0 +1,61 @@
+# Render Blueprint: API web service + static frontend. Secrets are set in the Render dashboard (sync: false).
+services:
+  - type: web
+    name: unifind-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: AUTH_MODE
+        value: firebase
+      - key: STORAGE_MODE
+        value: firestore
+      - key: NOTIFY_MODE
+        value: onesignal
+      - key: CORS_ORIGINS
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: FIREBASE_CLIENT_EMAIL
+        sync: false
+      - key: FIREBASE_PRIVATE_KEY
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: ONESIGNAL_APP_ID
+        sync: false
+      - key: ONESIGNAL_REST_API_KEY
+        sync: false
+
+  - type: web
+    name: unifind-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: node scripts/build-config.js
+    staticPublishPath: .
+    envVars:
+      - key: API_BASE_URL
+        sync: false
+      - key: AUTH_MODE
+        value: firebase
+      - key: FIREBASE_API_KEY
+        sync: false
+      - key: FIREBASE_AUTH_DOMAIN
+        sync: false
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: FIREBASE_APP_ID
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_UPLOAD_PRESET
+        sync: false
+      - key: ONESIGNAL_APP_ID
+        sync: false
