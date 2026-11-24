@@ -62,13 +62,13 @@ npm test
 Put these values in `backend/.env` when running locally, or in the Render dashboard when deployed. Don't commit keys or the service account file. `.gitignore` already blocks `.env` and service account JSON files.
 
 1. Firebase (LA3 C-03 and C-04)
-   - Create a Firebase project. In Authentication, turn on Email/Password and Google, and add `localhost` and your Render site's domain to the authorized domains.
+   - Create a Firebase project. In Authentication, turn on Email/Password and Google, and add `localhost` and your Render site's domain to the authorized domains (Authentication, Settings tab). Projects made after April 2025 don't include `localhost` by default.
    - Create a Firestore database. Deploy the rules and indexes in `firebase/` with `npx firebase-tools deploy --only firestore`, or paste them into the console.
    - In Project settings, open Service accounts and generate a new private key. Copy `project_id`, `client_email` and `private_key` from that file into `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL` and `FIREBASE_PRIVATE_KEY`.
    - In Project settings under General, add a Web app. Its `apiKey`, `authDomain`, `projectId` and `appId` go into the frontend config (step 4).
    - Set `AUTH_MODE=firebase` and `STORAGE_MODE=firestore`.
-2. Cloudinary (C-05). In Settings, open Upload and add an unsigned upload preset. Allow only `jpg,png,webp` and set the maximum file size to 5 MB (5242880 bytes). The backend needs `CLOUDINARY_CLOUD_NAME`. The preset name goes in the frontend config.
-3. OneSignal (C-06). Create a Web app with your HTTPS site URL. The service worker it needs, `frontend/OneSignalSDKWorker.js`, is already at the site root. Set `ONESIGNAL_APP_ID`, `ONESIGNAL_REST_API_KEY` and `NOTIFY_MODE=onesignal`. Users turn alerts on from the Your reports page.
+2. Cloudinary (C-05). In Settings, open Upload, then the Upload Presets tab, and add a preset with the signing mode set to Unsigned. Set its allowed formats to `jpg,png,webp`. Cloudinary presets can't hold a file size limit, so the 5 MB cap is checked in the browser before upload (`frontend/js/services.js`). The backend needs `CLOUDINARY_CLOUD_NAME`. The preset name goes in the frontend config.
+3. OneSignal (C-06). Create a Web app (Typical Site) with your HTTPS site URL. Create the REST API key under Settings, Keys & IDs, Add Key, and copy it right away because it is shown only once. The service worker it needs, `frontend/OneSignalSDKWorker.js`, is already at the site root. Set `ONESIGNAL_APP_ID`, `ONESIGNAL_REST_API_KEY` and `NOTIFY_MODE=onesignal`. Users turn alerts on from the Your reports page.
 4. Frontend config. `frontend/js/config.js` holds values the browser needs. None of them are secret. For a local run against the real services, edit the file: set `authMode: 'firebase'` and fill in the Firebase web config, the Cloudinary cloud name and preset, and the OneSignal app ID. On Render, `frontend/scripts/build-config.js` writes this file from environment variables.
 
 If you pick a real service but leave out one of its variables, the backend stops at startup and names the missing variable (C-02).
