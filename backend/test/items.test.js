@@ -75,6 +75,14 @@ test('ST-04: a failure after the save returns 503 and leaves nothing saved', asy
   assert.deepEqual(await repo.listByOwner('u1'), []);
 });
 
+test('a report never matches the same user\'s own report', async () => {
+  const { as } = setup();
+  await as('u1').post(report({ type: 'found', title: 'Black leather wallet' }));
+  const res = await as('u1').post(report({ type: 'lost', title: 'Black leather wallet' }));
+  assert.equal(res.status, 201);
+  assert.equal(res.body.matchCount, 0);
+});
+
 test('ST-05: notification failure still returns 201 with pending_retry, alerts run in parallel', async () => {
   const slowFail = { sendMatchAlert: () => new Promise((r) => setTimeout(() => r('failed'), 300)) };
   const { as, repo } = setup({ notifier: slowFail });

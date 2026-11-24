@@ -19,7 +19,8 @@ function createItemService({ repo, notifier }) {
       const item = await repo.create({ ...report, ownerUid: uid, status: 'open', matches: [], notificationStatus: 'none' });
       // A 503 must mean nothing was saved (I-2), so undo the save if a later step fails.
       try {
-        const candidates = await repo.findOpen({ type: OPPOSITE[item.type], category: item.category });
+        // Never match a user's report with their own, and never alert them about it.
+        const candidates = (await repo.findOpen({ type: OPPOSITE[item.type], category: item.category })).filter((c) => c.ownerUid !== uid);
         const matches = findMatches(item, candidates);
         if (!matches.length) return { itemId: item.itemId, matchCount: 0, notificationStatus: 'none' };
 
