@@ -59,29 +59,35 @@ npm test
 
 ## Connecting the real services
 
-Put these values in `backend/.env` when running locally, or in the Render dashboard when deployed. Don't commit keys or the service account file. `.gitignore` already blocks `.env` and service account JSON files.
+Put these values in `backend/.env` when running locally, or in the Vercel project's Environment Variables when deployed. Don't commit keys or the service account file. `.gitignore` already blocks `.env` and service account JSON files.
 
 1. Firebase (LA3 C-03 and C-04)
-   - Create a Firebase project. In Authentication, turn on Email/Password and Google, and add `localhost` and your Render site's domain to the authorized domains (Authentication, Settings tab). Projects made after April 2025 don't include `localhost` by default.
+   - Create a Firebase project. In Authentication, turn on Email/Password and Google, and add `localhost` and your Vercel site's domain to the authorized domains (Authentication, Settings tab). Projects made after April 2025 don't include `localhost` by default.
    - Create a Firestore database. Deploy the rules and indexes in `firebase/` with `npx firebase-tools deploy --only firestore`, or paste them into the console.
    - In Project settings, open Service accounts and generate a new private key. Copy `project_id`, `client_email` and `private_key` from that file into `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL` and `FIREBASE_PRIVATE_KEY`.
    - In Project settings under General, add a Web app. Its `apiKey`, `authDomain`, `projectId` and `appId` go into the frontend config (step 4).
    - Set `AUTH_MODE=firebase` and `STORAGE_MODE=firestore`.
 2. Cloudinary (C-05). In Settings, open Upload, then the Upload Presets tab, and add a preset with the signing mode set to Unsigned. Set its allowed formats to `jpg,png,webp`. Cloudinary presets can't hold a file size limit, so the 5 MB cap is checked in the browser before upload (`frontend/js/services.js`). The backend needs `CLOUDINARY_CLOUD_NAME`. The preset name goes in the frontend config.
 3. OneSignal (C-06). Create a Web app (Typical Site) with your HTTPS site URL. Create the REST API key under Settings, Keys & IDs, Add Key, and copy it right away because it is shown only once. The service worker it needs, `frontend/OneSignalSDKWorker.js`, is already at the site root. Set `ONESIGNAL_APP_ID`, `ONESIGNAL_REST_API_KEY` and `NOTIFY_MODE=onesignal`. Users turn alerts on from the Your reports page.
-4. Frontend config. `frontend/js/config.js` holds values the browser needs. None of them are secret. For a local run against the real services, edit the file: set `authMode: 'firebase'` and fill in the Firebase web config, the Cloudinary cloud name and preset, and the OneSignal app ID. On Render, `frontend/scripts/build-config.js` writes this file from environment variables.
+4. Frontend config. `frontend/js/config.js` holds values the browser needs. None of them are secret. For a local run against the real services, edit the file: set `authMode: 'firebase'` and fill in the Firebase web config, the Cloudinary cloud name and preset, and the OneSignal app ID. On Vercel, `frontend/scripts/build-config.js` writes this file from environment variables during the build.
 
 If you pick a real service but leave out one of its variables, the backend stops at startup and names the missing variable (C-02).
 
-## Deploying on Render
+## Deploying on Vercel
 
-`render.yaml` describes both services. In Render, choose New, then Blueprint, pick this repo, and fill in the variables marked `sync: false`.
+`vercel.json` deploys the site and the API as one Vercel project on the free Hobby plan. The site is served from `frontend/`, and every `/api/*` request goes to `api/index.js`, which runs the Express app from `backend/` as a serverless function. Because both share one domain, `API_BASE_URL` stays empty, and `CORS_ORIGINS` and `FRONTEND_URL` default to the project's production URL.
 
-The API (`unifind-api`) is a Web Service built from `backend/`. Set `CORS_ORIGINS` and `FRONTEND_URL` to the static site's URL.
+1. On vercel.com, sign up with GitHub, choose Add New, then Project, and import this repo. Leave Framework Preset as Other and the root directory as `./`. The build settings come from `vercel.json`.
+2. Before clicking Deploy, open Environment Variables and add:
+   - `NODE_ENV=production`, `AUTH_MODE=firebase`, `STORAGE_MODE=firestore`, `NOTIFY_MODE=fake` (change to `onesignal` once OneSignal is set up)
+   - `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY` (paste the key exactly as it appears in the service account file, with the `\n` sequences and without the outer quotes)
+   - `FIREBASE_API_KEY`, `FIREBASE_AUTH_DOMAIN`, `FIREBASE_APP_ID`
+   - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_UPLOAD_PRESET`
+   - Later: `ONESIGNAL_APP_ID`, `ONESIGNAL_REST_API_KEY`
+3. Deploy. Then add the site's domain (for example `unifind.vercel.app`) to Firebase's authorized domains, and use `https://<that domain>` as the OneSignal site URL.
+4. After changing an environment variable, redeploy from the Deployments tab so the new value is used.
 
-The website (`unifind-web`) is a Static Site built from `frontend/`. Set `API_BASE_URL` to the API's URL, then add the Firebase web config, the Cloudinary cloud name and preset, and the OneSignal app ID.
-
-Add the static site's URL to Firebase's authorized domains and to the site URL in OneSignal. Render's free plan puts the API to sleep after 15 minutes without traffic, and the next request takes about a minute to wake it. Open the site a few minutes before a demo.
+`https://<domain>/api/health` should return `{"ok":true}`. Vercel functions don't sleep the way Render's free API did, so there is no one-minute wake-up delay.
 
 ## API
 

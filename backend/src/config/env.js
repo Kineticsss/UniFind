@@ -12,6 +12,11 @@ const REQUIRED = {
 };
 
 function loadConfig(env = process.env) {
+  // On Vercel the site and API share one domain, so it can stand in for CORS_ORIGINS and FRONTEND_URL.
+  if (env.VERCEL_PROJECT_PRODUCTION_URL) {
+    const site = `https://${env.VERCEL_PROJECT_PRODUCTION_URL}`;
+    env = { CORS_ORIGINS: site, FRONTEND_URL: site, ...env };
+  }
   const config = {
     production: env.NODE_ENV === 'production',
     port: Number(env.PORT) || 8080,
@@ -24,8 +29,8 @@ function loadConfig(env = process.env) {
     firebase: {
       projectId: env.FIREBASE_PROJECT_ID,
       clientEmail: env.FIREBASE_CLIENT_EMAIL,
-      // Dashboards store the key with literal "\n" sequences.
-      privateKey: (env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
+      // Dashboards store the key with literal "\n" sequences, sometimes with the JSON quotes still on.
+      privateKey: (env.FIREBASE_PRIVATE_KEY || '').replace(/^"|"$/g, '').replace(/\\n/g, '\n'),
     },
     cloudinaryCloudName: env.CLOUDINARY_CLOUD_NAME || '',
     oneSignal: { appId: env.ONESIGNAL_APP_ID, restApiKey: env.ONESIGNAL_REST_API_KEY, timeoutMs: 5000 },

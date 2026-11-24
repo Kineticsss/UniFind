@@ -17,19 +17,25 @@ function createItemService({ repo, notifier }) {
   return {
     async createItem(report, uid) {
       const item = await repo.create({ ...report, ownerUid: uid, status: 'open', matches: [], notificationStatus: 'none' });
-      const candidates = await repo.findOpen({ type: OPPOSITE[item.type], category: item.category });
-      const matches = findMatches(item, candidates);
-      if (!matches.length) return { itemId: item.itemId, matchCount: 0, notificationStatus: 'none' };
+      // A 503 must mean nothing was saved (I-2), so undo the save if a later step fails.
+      try {
+        const candidates = await repo.findOpen({ type: OPPOSITE[item.type], category: item.category });
+        const matches = findMatches(item, candidates);
+        if (!matches.length) return { itemId: item.itemId, matchCount: 0, notificationStatus: 'none' };
 
-      await repo.saveMatches(item.itemId, matches);
-      const owners = new Map(candidates.map((c) => [c.itemId, c.ownerUid]));
-      const message = `A ${item.type} report may match your item: "${item.title}". Tap to review.`;
-      // Parallel, so a OneSignal outage costs one 5 s timeout, not one per match (LA3 ST-05).
-      const results = await Promise.all(matches.map((m) => notifier.sendMatchAlert(owners.get(m.itemId), message, item.itemId)));
-      // shortcut: pending_retry is recorded but nothing retries it yet; add a scheduled job if alerts must be guaranteed.
-      const notificationStatus = results.every((r) => r === 'sent') ? 'sent' : 'pending_retry';
-      await repo.update(item.itemId, { notificationStatus });
-      return { itemId: item.itemId, matchCount: matches.length, notificationStatus };
+        await repo.saveMatches(item.itemId, matches);
+        const owners = new Map(candidates.map((c) => [c.itemId, c.ownerUid]));
+        const message = `A ${item.type} report may match your item: "${item.title}". Tap to review.`;
+        // Parallel, so a OneSignal outage costs one 5 s timeout, not one per match (LA3 ST-05).
+        const results = await Promise.all(matches.map((m) => notifier.sendMatchAlert(owners.get(m.itemId), message, item.itemId)));
+        // shortcut: pending_retry is recorded but nothing retries it yet; add a scheduled job if alerts must be guaranteed.
+        const notificationStatus = results.every((r) => r === 'sent') ? 'sent' : 'pending_retry';
+        await repo.update(item.itemId, { notificationStatus });
+        return { itemId: item.itemId, matchCount: matches.length, notificationStatus };
+      } catch (err) {
+        await repo.remove(item.itemId).catch(() => {});
+        throw err;
+      }
     },
 
     async search({ type, category, q, from, to }, uid) {

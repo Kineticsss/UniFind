@@ -1,4 +1,4 @@
-// Render static-site build step: writes js/config.js from environment variables.
+// Vercel build step: writes js/config.js from environment variables.
 // These are public browser values (Firebase web config, Cloudinary unsigned preset, OneSignal app ID), not secrets.
 const fs = require('node:fs');
 const path = require('node:path');

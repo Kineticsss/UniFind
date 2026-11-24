@@ -4,6 +4,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const { createMemoryItemRepository } = require('../src/repositories/memoryItemRepository');
 const { setup, report, CLOUD } = require('./helpers');
 
 const photo = `https://res.cloudinary.com/${CLOUD}/image/upload/v1/unifind/wallet.jpg`;
@@ -63,6 +64,15 @@ test('ST-04: data store failure returns 503', async () => {
   const res = await setup({ repo: failing }).as('u1').post(report());
   assert.equal(res.status, 503);
   assert.equal(res.body.error.code, 'STORAGE_UNAVAILABLE');
+});
+
+test('ST-04: a failure after the save returns 503 and leaves nothing saved', async () => {
+  const { StorageError } = require('../src/errors');
+  const repo = createMemoryItemRepository();
+  repo.findOpen = async () => { throw StorageError(); };
+  const res = await setup({ repo }).as('u1').post(report());
+  assert.equal(res.status, 503);
+  assert.deepEqual(await repo.listByOwner('u1'), []);
 });
 
 test('ST-05: notification failure still returns 201 with pending_retry, alerts run in parallel', async () => {
