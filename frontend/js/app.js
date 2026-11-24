@@ -25,7 +25,7 @@ async function api(path, { method = 'GET', body } = {}) {
       body: body && JSON.stringify(body),
     });
   } catch {
-    throw Object.assign(new ApiError('Cannot reach UniFind. Check your connection; the server may be waking up, so try again in a minute.'), { status: 0 });
+    throw Object.assign(new ApiError('UniFind is not responding. If it was idle it takes about a minute to start, so try again shortly.'), { status: 0 });
   }
   const data = await res.json().catch(() => ({}));
   if (res.ok) return data;
@@ -40,7 +40,7 @@ async function api(path, { method = 'GET', body } = {}) {
 // ---------- UI helpers ----------
 function show(view) {
   $$('[data-view]').forEach((s) => (s.hidden = s.dataset.view !== view));
-  $$('#nav [data-route]').forEach((a) => a.toggleAttribute('aria-current', a.dataset.route === view));
+  $$('#nav [data-route]').forEach((a) => a.setAttribute('aria-current', a.dataset.route === view ? 'page' : 'false'));
   $('#nav').hidden = view === 'signin';
   $('#main').focus({ preventScroll: true });
   window.scrollTo(0, 0);
@@ -53,16 +53,19 @@ function toast(text) {
 
 const loading = (on) => ($('#loading').hidden = !on);
 
+const KIND = { lost: 'Lost', found: 'Found' };
+const yours = (item) => (item.isMine ? '<span class="yours">Yours</span>' : '');
+const where = (item) => (item.location ? `, ${esc(item.location)}` : '');
+
 function tagCard(item) {
-  const img = item.imageUrl
-    ? `<img class="tag-img" src="${esc(thumb(item.imageUrl, 'c_fill,w_480,h_360'))}" alt="" loading="lazy">`
-    : `<div class="tag-noimg" aria-hidden="true">${esc(item.title[0]?.toUpperCase())}</div>`;
-  return `<a class="tag" href="#/item/${encodeURIComponent(item.itemId)}">
-    ${img}
-    <div class="tag-body">
-      <div class="d-flex gap-1 flex-wrap"><span class="pill pill-${item.type}">${item.type}</span>${item.isMine ? '<span class="pill pill-mine">yours</span>' : ''}</div>
-      <h2 class="tag-title">${esc(item.title)}</h2>
-      <div class="tag-meta">${esc(catLabel(item.category))} · ${fmtDate(item.date)}${item.location ? ` · ${esc(item.location)}` : ''}</div>
+  const photo = item.imageUrl ? `<img class="card-photo" src="${esc(thumb(item.imageUrl, 'c_fill,w_480,h_360'))}" alt="" loading="lazy">` : '';
+  return `<a class="card-item ${item.type}" href="#/item/${encodeURIComponent(item.itemId)}">
+    ${photo}
+    <div class="card-body">
+      <span class="card-kind">${KIND[item.type]}${yours(item)}</span>
+      <h2 class="card-title">${esc(item.title)}</h2>
+      <p class="card-meta">${esc(catLabel(item.category))}</p>
+      <p class="card-meta">${fmtDate(item.date)}${where(item)}</p>
     </div>
   </a>`;
 }
@@ -77,7 +80,7 @@ async function renderBrowse() {
     $('#resultCount').textContent = `${items.length} open report${items.length === 1 ? '' : 's'}`;
     $('#board').innerHTML = items.length
       ? items.map(tagCard).join('')
-      : `<div class="empty"><p class="h5 mb-2">Nothing here yet.</p><p class="mb-3">Try fewer filters, or be the first to post.</p><a class="btn btn-ink" href="#/report">Report an item</a></div>`;
+      : `<div class="empty"><h2 class="h-sub">No reports match these filters</h2><p class="muted">Clear a filter or search a different word. If nobody has posted your item yet, post it so others can find you.</p><a class="btn btn-pen" href="#/report">Report an item</a></div>`;
   } catch (err) {
     $('#board').innerHTML = `<div class="empty">${esc(err.message)}</div>`;
   }
@@ -101,7 +104,7 @@ async function renderMine() {
   loading(true);
   try {
     const { items } = await api('/api/items/mine');
-    $('#mineList').innerHTML = items.length ? items.map(mineRow).join('') : `<div class="empty">You have not posted anything yet. <a href="#/report">Report an item</a>.</div>`;
+    $('#mineList').innerHTML = items.length ? items.map(mineRow).join('') : `<div class="empty"><h2 class="h-sub">You have no reports yet</h2><p class="muted">Post a lost or found item and its possible matches show up here.</p><a class="btn btn-pen" href="#/report">Report an item</a></div>`;
   } catch (err) {
     $('#mineList').innerHTML = `<div class="empty">${esc(err.message)}</div>`;
   } finally {
@@ -116,23 +119,22 @@ function mineRow(item) {
     ? item.matches
         .map(
           ({ item: m, score }) => `<a class="match" href="#/item/${encodeURIComponent(m.itemId)}">
-            ${m.imageUrl ? `<img src="${esc(thumb(m.imageUrl, 'c_fill,w_112,h_84'))}" alt="">` : '<span class="thumb"></span>'}
-            <span><span class="pill pill-${m.type}">${m.type}</span> <strong>${esc(m.title)}</strong><br><span class="small muted">${fmtDate(m.date)}${m.location ? ` · ${esc(m.location)}` : ''}</span></span>
-            <span class="score" title="Shared keywords">score ${score}</span>
+            ${m.imageUrl ? `<img src="${esc(thumb(m.imageUrl, 'c_fill,w_120,h_90'))}" alt="">` : '<span class="thumb"></span>'}
+            <span><strong>${KIND[m.type]}: ${esc(m.title)}</strong><br><span class="small muted">${fmtDate(m.date)}${where(m)}</span></span>
+            <span class="strength ${score >= 3 ? 'strong' : ''}">${score >= 3 ? 'Strong match' : 'Possible match'}</span>
           </a>`,
         )
         .join('')
-    : '<p class="small muted mb-0">No likely matches yet. You will get an alert when one is posted.</p>';
-  return `<article class="panel">
-    <div class="d-flex flex-wrap gap-2 align-items-baseline mb-2">
-      <span class="pill pill-${item.type}">${item.type}</span>
-      <h2 class="h5 m-0"><a href="#/item/${encodeURIComponent(item.itemId)}" class="text-reset">${esc(item.title)}</a></h2>
-      <span class="small muted">${esc(catLabel(item.category))} · ${fmtDate(item.date)}</span>
-      <span class="mono ms-auto">#${esc(item.itemId.slice(0, 8))}</span>
+    : '<p class="small muted mb-0">No possible matches yet. You get an alert when one is posted.</p>';
+  return `<article class="report-row ${item.type}">
+    <div class="d-flex flex-wrap gap-2 align-items-baseline">
+      <h2 class="h-sub m-0"><a href="#/item/${encodeURIComponent(item.itemId)}" class="text-reset">${KIND[item.type]}: ${esc(item.title)}</a></h2>
+      <span class="small muted ms-auto">Report ${esc(item.itemId.slice(0, 8))}</span>
     </div>
-    <h3 class="h6 mt-3 mb-2">Possible matches (${item.matches.length})</h3>
+    <p class="small muted mb-3">${esc(catLabel(item.category))}, ${fmtDate(item.date)}</p>
+    <h3 class="h-small mb-2">Possible matches (${item.matches.length})</h3>
     <div class="vstack gap-2">${matches}</div>
-    ${item.matches.length ? '<p class="small muted mt-3 mb-0">Matches are suggestions. Check the details, then meet at the campus lost and found office to hand over the item.</p>' : ''}
+    ${item.matches.length ? '<p class="small muted mt-3 mb-0">Check the details first. Then hand over the item at the campus lost and found office.</p>' : ''}
   </article>`;
 }
 
@@ -143,19 +145,19 @@ async function renderItem(id) {
   loading(true);
   try {
     const item = await api(`/api/items/${encodeURIComponent(id)}`);
-    box.innerHTML = `<div class="row g-4">
-      <div class="col-md-6">${item.imageUrl ? `<img class="item-hero" src="${esc(thumb(item.imageUrl, 'c_limit,w_1000'))}" alt="Photo of ${esc(item.title)}">` : '<div class="tag-noimg rounded-4" aria-hidden="true"></div>'}</div>
+    box.innerHTML = `<div class="row g-4 g-lg-5">
+      <div class="col-md-6">${item.imageUrl ? `<img class="item-photo" src="${esc(thumb(item.imageUrl, 'c_limit,w_1000'))}" alt="Photo of ${esc(item.title)}">` : '<div class="item-nophoto" role="img" aria-label="No photo"></div>'}</div>
       <div class="col-md-6">
-        <span class="pill pill-${item.type}">${item.type}</span> ${item.isMine ? '<span class="pill pill-mine">yours</span>' : ''}
-        <h1 class="page-title mt-2">${esc(item.title)}</h1>
-        <dl class="row mt-3 small">
-          <dt class="col-4">Category</dt><dd class="col-8">${esc(catLabel(item.category))}</dd>
-          <dt class="col-4">Date</dt><dd class="col-8">${fmtDate(item.date)}</dd>
-          ${item.location ? `<dt class="col-4">Where</dt><dd class="col-8">${esc(item.location)}</dd>` : ''}
-          <dt class="col-4">Report ID</dt><dd class="col-8 mono">${esc(item.itemId)}</dd>
+        <span class="card-kind ${item.type === 'lost' ? 'text-danger' : ''}">${KIND[item.type]}${yours(item)}</span>
+        <h1 class="page-title mt-1">${esc(item.title)}</h1>
+        <dl class="facts">
+          <dt>Category</dt><dd>${esc(catLabel(item.category))}</dd>
+          <dt>Date</dt><dd>${fmtDate(item.date)}</dd>
+          ${item.location ? `<dt>Where</dt><dd>${esc(item.location)}</dd>` : ''}
+          <dt>Report</dt><dd>${esc(item.itemId)}</dd>
         </dl>
-        ${item.description ? `<p style="white-space: pre-line">${esc(item.description)}</p>` : ''}
-        <p class="small muted" ${item.isMine ? 'hidden' : ''}>${item.type === 'found' ? 'Is this yours? Bring proof of ownership to the campus lost and found office.' : 'Found this? Turn it in to the campus lost and found office and post it as found.'}</p>
+        ${item.description ? `<p style="white-space: pre-line; max-width: 34em">${esc(item.description)}</p>` : ''}
+        <p class="small muted" ${item.isMine ? 'hidden' : ''}>${item.type === 'found' ? 'Is this yours? Bring proof that it is yours to the campus lost and found office.' : 'Found this? Turn it in at the campus lost and found office, then post it as found.'}</p>
       </div></div>`;
   } catch (err) {
     box.innerHTML = `<div class="empty">${esc(err.message)}</div>`;
@@ -250,18 +252,18 @@ $('#reportForm').addEventListener('submit', async (e) => {
     const result = await api('/api/items', { method: 'POST', body: { ...body, imageUrl } });
     form.dataset.ready = '';
     $('#postedTitle').textContent = result.matchCount
-      ? `${result.matchCount} possible match${result.matchCount === 1 ? '' : 'es'}`
-      : 'No matches yet';
-    $('#postedId').textContent = `Report ID ${result.itemId}`;
+      ? `Posted. ${result.matchCount} possible match${result.matchCount === 1 ? '' : 'es'}.`
+      : 'Posted to the board';
+    $('#postedId').textContent = `Report ${result.itemId}`;
     $('#postedText').textContent = result.matchCount
       ? result.notificationStatus === 'sent'
-        ? 'We alerted the people who posted them. Review the matches in My reports.'
-        : 'Review them in My reports. We could not alert the other people right now and will try again.'
-      : 'Your report is on the board. We will alert you when a matching report is posted.';
+        ? 'The people who posted them got an alert. Compare the details in My reports.'
+        : 'Compare the details in My reports. The alert to the other people did not go through, so it is marked to send again.'
+      : 'No open report looks like yours yet. You get an alert when one is posted.';
     show('posted');
   } catch (err) {
     if (err.fields) showFieldErrors(err.fields);
-    $('#reportError').textContent = err.status === 503 ? 'The database is busy or unavailable. Your report was not saved; please try again.' : err.message;
+    $('#reportError').textContent = err.status === 503 ? 'Your report was not saved because the database is not responding. Try posting again in a minute.' : err.message;
   } finally {
     btn.disabled = false;
     btn.textContent = 'Post report';
@@ -309,7 +311,7 @@ async function start() {
   try {
     ({ categories } = await (await fetch(`${cfg.apiBase}/api/categories`)).json());
   } catch {
-    signinError('Cannot reach the UniFind server. If it was idle, it can take about a minute to wake up. Refresh to try again.');
+    signinError('UniFind is not responding. If it was idle it takes about a minute to start. Refresh the page to try again.');
   }
   const options = categories.map((c) => `<option value="${esc(c.slug)}">${esc(c.label)}</option>`).join('');
   $('#category').insertAdjacentHTML('beforeend', options);

@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>UniFind · Campus Lost and Found</title>
   <meta name="description" content="Report and find lost items on campus.">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M6 4h14l8 8v16H6z' fill='%237a1f2b'/%3E%3Ccircle cx='12' cy='11' r='2.5' fill='%23f6f1e8'/%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M10 2h12v28H10L4 24V8z' fill='%23f2c230'/%3E%3Ccircle cx='9.5' cy='16' r='2.5' fill='%231f2a30'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="css/app.css" rel="stylesheet">
 </head>
@@ -18,14 +18,14 @@
   <header class="topbar">
     <div class="container d-flex align-items-center gap-3">
       <a class="brand" href="#/" aria-label="UniFind home">
-        <svg class="brand-tag" viewBox="0 0 32 32" aria-hidden="true"><path d="M6 4h14l8 8v16H6z"/><circle cx="12" cy="11" r="2.5"/></svg>
-        <span>Uni<em>Find</em></span>
+        <svg class="brand-tag" viewBox="0 0 22 30" aria-hidden="true"><path d="M7 0h15v30H7L0 23V7z" fill="#f2c230"/><circle cx="6.5" cy="15" r="2.6" fill="#1f2a30"/></svg>
+        <span>UniFind</span>
       </a>
       <nav class="ms-auto d-flex align-items-center gap-1" id="nav" hidden>
-        <a class="navlink" href="#/" data-route="browse">Browse</a>
+        <a class="navlink" href="#/" data-route="browse">Board</a>
         <a class="navlink" href="#/mine" data-route="mine">My reports</a>
-        <a class="btn btn-ink btn-sm ms-1" href="#/report" data-route="report">Report an item</a>
-        <button class="btn btn-link btn-sm navlink" id="signOut" type="button">Sign out</button>
+        <a class="btn btn-tag btn-sm ms-1 nav-cta" href="#/report" data-route="report">Report an item</a>
+        <button class="btn btn-link navlink" id="signOut" type="button">Sign out</button>
       </nav>
     </div>
   </header>
@@ -35,29 +35,33 @@
     <section data-view="signin" hidden>
       <div class="row align-items-center g-5">
         <div class="col-lg-6">
-          <p class="eyebrow">Campus lost and found</p>
-          <h1 class="display-title">Lost it on campus?<br>Someone may have <span class="ink-found">found</span> it.</h1>
-          <p class="lede">Post what you lost or found in one place. UniFind checks every new report against the others and alerts you when there is a likely match.</p>
+          <div class="hero">
+            <svg class="string" viewBox="0 0 100 60" aria-hidden="true"><path d="M0 8 C 35 6, 60 40, 100 30" fill="none" stroke="#1f2a30" stroke-width="2.5" stroke-linecap="round"/></svg>
+            <div class="paper-tag">
+              <h1 class="display">Lost something on campus? Check the board.</h1>
+              <p class="hero-note mb-0">Students, faculty and staff post what they lose and find here. When a new report looks like yours, you get an alert.</p>
+            </div>
+          </div>
         </div>
         <div class="col-lg-5 offset-lg-1">
-          <div class="panel">
-            <h2 class="h4 mb-3">Sign in</h2>
+          <div class="sheet">
+            <h2 class="mb-3">Sign in</h2>
             <div id="signinFirebase" hidden>
               <form id="emailForm" class="vstack gap-3" novalidate>
                 <div><label class="form-label" for="email">School email</label><input class="form-control" id="email" type="email" autocomplete="email" required></div>
                 <div><label class="form-label" for="password">Password</label><input class="form-control" id="password" type="password" autocomplete="current-password" minlength="6" required></div>
                 <div class="d-flex gap-2">
-                  <button class="btn btn-ink flex-fill" type="submit" data-action="signin">Sign in</button>
-                  <button class="btn btn-outline-ink flex-fill" type="submit" data-action="signup">Create account</button>
+                  <button class="btn btn-pen flex-fill" type="submit" data-action="signin">Sign in</button>
+                  <button class="btn btn-line flex-fill" type="submit" data-action="signup">Create account</button>
                 </div>
               </form>
-              <div class="divider"><span>or</span></div>
-              <button class="btn btn-outline-ink w-100" id="googleBtn" type="button">Continue with Google</button>
+              <p class="small muted text-center my-3">or</p>
+              <button class="btn btn-line w-100" id="googleBtn" type="button">Continue with Google</button>
             </div>
             <form id="signinFake" class="vstack gap-3" hidden novalidate>
-              <div class="alert alert-warning small mb-0">Demo mode: no Firebase project is configured, so any name signs you in.</div>
+              <p class="small muted mb-0">Demo mode is on because no Firebase project is set up yet. Any name signs you in.</p>
               <div><label class="form-label" for="fakeName">Your name</label><input class="form-control" id="fakeName" required maxlength="40" autocomplete="name"></div>
-              <button class="btn btn-ink" type="submit">Continue</button>
+              <button class="btn btn-pen" type="submit">Sign in</button>
             </form>
             <p class="form-error mt-3 mb-0" id="signinError" role="alert"></p>
           </div>
@@ -67,8 +71,9 @@
 
     <!-- Browse / search -->
     <section data-view="browse" hidden>
-      <div class="d-flex flex-wrap align-items-end gap-3 mb-4">
-        <div><p class="eyebrow">Open reports</p><h1 class="page-title">Browse the board</h1></div>
+      <div class="board-head">
+        <h1 class="page-title">The board</h1>
+        <p class="muted mb-1" id="resultCount" aria-live="polite"></p>
       </div>
       <form id="filters" class="filters" role="search">
         <div class="seg" role="radiogroup" aria-label="Report type">
@@ -77,7 +82,7 @@
           <input type="radio" class="btn-check" name="type" id="tFound" value="found"><label for="tFound">Found</label>
         </div>
         <label class="visually-hidden" for="fq">Keyword</label>
-        <input class="form-control flex-grow-1" id="fq" name="q" type="search" placeholder="Search: wallet, Samsung, room 301…">
+        <input class="form-control search" id="fq" name="q" type="search" placeholder="Search by word, like Samsung or umbrella">
         <label class="visually-hidden" for="fcat">Category</label>
         <select class="form-select" id="fcat" name="category"><option value="">All categories</option></select>
         <label class="visually-hidden" for="ffrom">From date</label>
@@ -85,7 +90,6 @@
         <label class="visually-hidden" for="fto">To date</label>
         <input class="form-control" id="fto" name="to" type="date" title="To date">
       </form>
-      <p class="muted small mt-3" id="resultCount" aria-live="polite"></p>
       <div class="board" id="board"></div>
     </section>
 
@@ -93,14 +97,13 @@
     <section data-view="report" hidden>
       <div class="row g-5">
         <div class="col-lg-7">
-          <p class="eyebrow">F-01</p>
           <h1 class="page-title mb-4">Report an item</h1>
           <form id="reportForm" class="vstack gap-4" novalidate>
             <fieldset>
-              <legend class="form-label">I…</legend>
+              <legend class="form-label">What happened?</legend>
               <div class="seg seg-lg" role="radiogroup">
-                <input type="radio" class="btn-check" name="type" id="rLost" value="lost" checked><label for="rLost">lost something</label>
-                <input type="radio" class="btn-check" name="type" id="rFound" value="found"><label for="rFound">found something</label>
+                <input type="radio" class="btn-check" name="type" id="rLost" value="lost" checked><label for="rLost">I lost something</label>
+                <input type="radio" class="btn-check" name="type" id="rFound" value="found"><label for="rFound">I found something</label>
               </div>
               <div class="invalid-feedback d-block" data-error="type"></div>
             </fieldset>
@@ -122,7 +125,7 @@
               </div>
             </div>
             <div>
-              <label class="form-label" for="location">Where? <span class="muted">(optional)</span></label>
+              <label class="form-label" for="location">Where <span class="hint">(optional)</span></label>
               <input class="form-control" id="location" name="location" maxlength="100" placeholder="CICS building, 3rd floor">
               <div class="invalid-feedback" data-error="location"></div>
             </div>
@@ -132,7 +135,7 @@
               <div class="invalid-feedback" data-error="description"></div>
             </div>
             <div>
-              <span class="form-label d-block">Photo <span class="muted">(optional, JPG, PNG or WebP up to 5 MB)</span></span>
+              <span class="form-label d-block">Photo <span class="hint">(optional, JPG, PNG or WebP up to 5 MB)</span></span>
               <div class="dropzone" id="dropzone">
                 <input type="file" id="photo" accept="image/jpeg,image/png,image/webp" class="visually-hidden">
                 <label for="photo" class="dropzone-label" id="photoLabel">Choose a photo</label>
@@ -143,12 +146,12 @@
               <div class="invalid-feedback d-block" data-error="imageUrl"></div>
             </div>
             <p class="form-error mb-0" id="reportError" role="alert"></p>
-            <div><button class="btn btn-ink btn-lg" type="submit" id="submitReport">Post report</button></div>
+            <div><button class="btn btn-pen btn-lg" type="submit" id="submitReport">Post report</button></div>
           </form>
         </div>
         <aside class="col-lg-4 offset-lg-1">
-          <div class="note">
-            <h2 class="h6">How matching works</h2>
+          <div class="aside-note">
+            <h2 class="h-small">How matching works</h2>
             <p class="small mb-2">When you post, UniFind compares your report with open reports of the opposite type in the same category, using the words in the title and description.</p>
             <p class="small mb-0">Specific words help most: brand, model, stickers, a name on the cover. Colors count for less.</p>
           </div>
@@ -158,14 +161,15 @@
 
     <!-- Result after posting -->
     <section data-view="posted" hidden>
-      <div class="panel posted text-center mx-auto">
-        <p class="eyebrow">Report posted</p>
-        <h1 class="page-title" id="postedTitle"></h1>
-        <p class="mono" id="postedId"></p>
+      <div class="stub">
+        <div class="paper-tag mb-4">
+          <h1 class="page-title" id="postedTitle"></h1>
+          <p class="ref mt-2 mb-0" id="postedId"></p>
+        </div>
         <p class="lede mb-4" id="postedText"></p>
-        <div class="d-flex flex-wrap gap-2 justify-content-center">
-          <a class="btn btn-ink" href="#/mine">See my reports</a>
-          <a class="btn btn-outline-ink" href="#/report">Report another</a>
+        <div class="d-flex flex-wrap gap-2">
+          <a class="btn btn-pen" href="#/mine">See my reports</a>
+          <a class="btn btn-line" href="#/report">Report another item</a>
         </div>
       </div>
     </section>
@@ -173,8 +177,8 @@
     <!-- My reports + matches -->
     <section data-view="mine" hidden>
       <div class="d-flex flex-wrap align-items-end gap-3 mb-4">
-        <div><p class="eyebrow">Yours</p><h1 class="page-title">My reports</h1></div>
-        <button class="btn btn-outline-ink btn-sm ms-auto" id="pushBtn" type="button" hidden>Turn on match alerts</button>
+        <h1 class="page-title">My reports</h1>
+        <button class="btn btn-line btn-sm ms-auto" id="pushBtn" type="button" hidden>Turn on match alerts</button>
       </div>
       <div class="vstack gap-3" id="mineList"></div>
     </section>
@@ -192,7 +196,7 @@
     <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"><div class="toast-body" id="toastBody"></div></div>
   </div>
 
-  <footer class="container small muted pb-4">UniFind · CS 413 project. Hand items over at the campus lost and found office; UniFind only helps you find each other.</footer>
+  <footer class="site-foot"><div class="container small muted py-3">Hand items over at the campus lost and found office. UniFind helps you find each other; it does not hold items.</div></footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" defer></script>
   <script src="js/config.js"></script>
